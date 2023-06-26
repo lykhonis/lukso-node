@@ -1,0 +1,4 @@
+/data
+/validators
+/secrets/validator_password
+/.env

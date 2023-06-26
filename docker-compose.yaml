@@ -1,0 +1,223 @@
+version: "3.8"
+services:
+  init-geth:
+    image: ethereum/client-go:$GETH_VERSION
+    container_name: geth-init
+    volumes:
+      - ./data/execution_data:/execution_data
+      - ./configs:/configs
+    command: >
+      --datadir=/execution_data init /configs/genesis.json
+
+  geth:
+    image: ethereum/client-go:$GETH_VERSION
+    container_name: geth
+    depends_on:
+      - init-geth
+    volumes:
+      - ./data/execution_data:/execution_data
+      - ./configs:/configs
+      - ./secrets:/secrets
+    restart: unless-stopped
+    stop_signal: SIGINT
+    stop_grace_period: 2m
+    command: >
+      --datadir=/execution_data
+      --ws
+      --ws.api "eth,net"
+      --ws.addr 0.0.0.0
+      --ws.origins "*"
+      --http
+      --http.api "eth,net"
+      --http.addr 0.0.0.0
+      --http.corsdomain "*"
+      --http.vhosts "*"
+      --ipcdisable
+      --port 30303
+      --discovery.port 30303
+      --authrpc.addr 0.0.0.0
+      --authrpc.port 8551
+      --authrpc.vhosts "*"
+      --authrpc.jwtsecret /secrets/jwt.hex
+      --datadir=/execution_data
+      --bootnodes $GETH_BOOTSTRAP_NODE
+      --networkid $LUKSO_MAINNET_NETWORK_ID
+      --verbosity $GETH_VERBOSITY
+      --metrics
+      --metrics.addr 0.0.0.0
+      --miner.gaslimit 42000000
+      --miner.gasprice 4200000000
+      --nat extip:$EXTERNAL_IP
+    network_mode: host
+    logging:
+      driver: "local"
+      options:
+        max-size: "100m"
+
+  beacon:
+    image: sigp/lighthouse:$LIGHTHOUSE_VERSION
+    container_name: beacon
+    depends_on:
+      - geth
+    volumes:
+      - ./data/consensus_data:/consensus_data
+      - ./configs:/configs
+      - ./secrets:/secrets
+    restart: unless-stopped
+    stop_signal: SIGINT
+    stop_grace_period: 2m
+    command: >
+      lighthouse beacon_node
+      --debug-level $LIGHTHOUSE_DEBUG_LEVEl
+      --datadir /consensus_data
+      --testnet-dir /configs
+      --staking
+      --metrics
+      --metrics-address 0.0.0.0
+      --metrics-port 8080
+      --http
+      --http-address 0.0.0.0
+      --http-port 4000
+      --execution-endpoint http://127.0.0.1:8551
+      --execution-jwt /secrets/jwt.hex
+      --eth1-blocks-per-log-query 1000
+      --listen-address 0.0.0.0
+      --enable-private-discovery
+      --subscribe-all-subnets
+      --validator-monitor-auto
+      --validator-monitor-individual-tracking-threshold 500
+      --enr-address $EXTERNAL_IP
+      --enr-udp-port 9000
+      --enr-tcp-port 9000
+      --discovery-port 9000
+      --target-peers 100
+      --boot-nodes $LIGHTHOUSE_BOOTSTRAP_NODE
+      --suggested-fee-recipient $WITHDRAWAL_ADDRESS
+    network_mode: host
+    logging:
+      driver: "local"
+      options:
+        max-size: "100m"
+
+  validator_import:
+    image: sigp/lighthouse:$LIGHTHOUSE_VERSION
+    container_name: validator_import
+    volumes:
+      - ./data/consensus_data:/consensus_data
+      - ./secrets:/secrets
+      - ./configs:/configs
+      - ./validators:/validators
+    command: >
+      lighthouse account validator import
+      --debug-level $LIGHTHOUSE_DEBUG_LEVEl
+      --datadir /consensus_data
+      --testnet-dir /configs
+      --directory /validators
+      --password-file /secrets/validator_password
+      --reuse-password
+
+  validator:
+    image: sigp/lighthouse:$LIGHTHOUSE_VERSION
+    container_name: validator
+    depends_on:
+      beacon:
+        condition: service_started
+      validator_import:
+        condition: service_completed_successfully
+    volumes:
+      - ./data/consensus_data:/consensus_data
+      - ./configs:/configs
+    restart: unless-stopped
+    stop_signal: SIGINT
+    stop_grace_period: 2m
+    command: >
+      lighthouse validator_client
+      --debug-level $LIGHTHOUSE_DEBUG_LEVEl
+      --datadir /consensus_data
+      --testnet-dir /configs
+      --init-slashing-protection
+      --http
+      --http-address 0.0.0.0
+      --http-port 5062
+      --metrics
+      --metrics-address 0.0.0.0
+      --metrics-port 8081
+      --beacon-nodes http://127.0.0.1:4000
+      --suggested-fee-recipient $WITHDRAWAL_ADDRESS
+      --enable-high-validator-count-metrics
+      --unencrypted-http-transport
+    network_mode: host
+    logging:
+      driver: "local"
+      options:
+        max-size: "100m"
+
+  prometheus:
+    image: prom/prometheus:v2.45.0-rc.1
+    container_name: prometheus
+    user: root
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data/prometheus_data:/prometheus_data    
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus_data'
+      - '--storage.tsdb.retention.time=60d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    network_mode: host
+
+  grafana:
+    image: grafana/grafana:9.5.2
+    container_name: grafana
+    user: root
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    volumes:
+      - ./data/grafana_data:/var/lib/grafana
+      - ./grafana/etc:/etc/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=$GRAFANA_USER
+      - GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_PASSWORD
+      - GF_USERS_ALLOW_SIGN_UP=false
+    network_mode: host
+
+  json-exporter:
+    image: quay.io/prometheuscommunity/json-exporter
+    container_name: json-exporter
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/exporters/json-exporter/config.yml:/config.yml
+    command:
+      - '--config.file=/config.yml'
+    network_mode: host
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    network_mode: host
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/exporters/blackbox-exporter/config.yml:/config.yml
+    command:
+      - '--config.file=/config.yml'
+    network_mode: host

@@ -1,0 +1,217 @@
+version: "3.8"
+services:
+  init-geth:
+    image: ethereum/client-go:$GETH_VERSION
+    container_name: geth-init
+    volumes:
+      - ./data/execution_data:/execution_data
+      - ./configs:/configs
+    command: >
+      --datadir=/execution_data init /configs/genesis.json
+
+  geth:
+    image: ethereum/client-go:$GETH_VERSION
+    container_name: geth
+    depends_on:
+      - init-geth
+    volumes:
+      - ./data/execution_data:/execution_data
+      - ./configs:/configs
+      - ./secrets:/secrets
+    restart: unless-stopped
+    stop_signal: SIGINT
+    stop_grace_period: 2m
+    command: >
+      --datadir=/execution_data
+      --ws
+      --ws.api "eth,net"
+      --ws.addr 0.0.0.0
+      --ws.origins "*"
+      --http
+      --http.api "eth,net"
+      --http.addr 0.0.0.0
+      --http.corsdomain "*"
+      --http.vhosts "*"
+      --ipcdisable
+      --port 30303
+      --discovery.port 30303
+      --authrpc.addr 0.0.0.0
+      --authrpc.port 8551
+      --authrpc.vhosts "*"
+      --authrpc.jwtsecret /secrets/jwt.hex
+      --datadir=/execution_data
+      --bootnodes $GETH_BOOTSTRAP_NODE
+      --networkid $LUKSO_MAINNET_NETWORK_ID
+      --verbosity $GETH_VERBOSITY
+      --metrics
+      --metrics.addr 0.0.0.0
+      --miner.gaslimit 42000000
+      --miner.gasprice 4200000000
+      --nat extip:$EXTERNAL_IP
+    network_mode: host
+    logging:
+      driver: "local"
+      options:
+        max-size: "100m"
+
+  beacon:
+    image: prysmaticlabs/prysm-beacon-chain:$PRYSM_BEACON_VERSION
+    container_name: beacon
+    depends_on:
+      - geth
+    volumes:
+      - ./data/consensus_data:/consensus_data
+      - ./configs:/configs
+      - ./secrets:/secrets
+    restart: unless-stopped
+    stop_signal: SIGINT
+    stop_grace_period: 2m
+    command: >
+      --accept-terms-of-use
+      --genesis-state=/configs/genesis.ssz
+      --chain-config-file=/configs/config.yaml
+      --datadir=/consensus_data
+      --bootstrap-node $PRYSM_BOOTSTRAP_NODE_0
+      --bootstrap-node $PRYSM_BOOTSTRAP_NODE_1
+      --execution-endpoint=http://localhost:8551
+      --jwt-secret=/secrets/jwt.hex
+      --suggested-fee-recipient $WITHDRAWAL_ADDRESS
+      --min-sync-peers=5
+      --monitoring-host 0.0.0.0
+      --grpc-gateway-host 0.0.0.0
+      --rpc-host 0.0.0.0
+      --rpc-port 4000
+      --verbosity $PRYSM_VERBOSITY
+      --p2p-host-ip $EXTERNAL_IP
+      --p2p-max-peers 250
+      --p2p-tcp-port 13000
+      --p2p-udp-port 12000
+      --subscribe-all-subnets
+      --minimum-peers-per-subnet 0
+      --contract-deployment-block 0
+      --block-batch-limit 512
+      --block-batch-limit-burst-factor 10
+    network_mode: host
+    logging:
+      driver: "local"
+      options:
+        max-size: "100m"
+  
+  validator_import:
+    image: prysmaticlabs/prysm-validator:$VALIDATOR_VERSION
+    container_name: validator_import
+    volumes:
+      - ./secrets:/secrets
+      - ./validators:/validators
+      - ./data/validator_data:/validator_data
+      - ./data/validator_wallet:/validator_wallet
+    command: >
+      accounts import
+      --accept-terms-of-use
+      --keys-dir=/validators
+      --wallet-dir=/validator_wallet
+      --wallet-password-file=/secrets/validator_password
+      --account-password-file=/secrets/validator_password
+
+  validator:
+    image: prysmaticlabs/prysm-validator:$PRYSM_VALIDATOR_VERSION
+    container_name: validator
+    depends_on:
+      beacon:
+        condition: service_started
+      validator_import:
+        condition: service_completed_successfully
+    volumes:
+      - ./configs:/configs
+      - ./secrets:/secrets
+      - ./validators:/validators
+      - ./data/validator_data:/validator_data
+      - ./data/validator_wallet:/validator_wallet
+    restart: unless-stopped
+    stop_signal: SIGINT
+    stop_grace_period: 2m
+    command: >
+      --accept-terms-of-use
+      --datadir /validator_data
+      --wallet-dir /validator_wallet
+      --wallet-password-file /secrets/validator_password
+      --chain-config-file /configs/config.yaml
+      --monitoring-host 0.0.0.0
+      --grpc-gateway-host 0.0.0.0
+      --rpc-host 0.0.0.0
+      --suggested-fee-recipient $WITHDRAWAL_ADDRESS
+    network_mode: host
+    logging:
+      driver: "local"
+      options:
+        max-size: "100m"
+
+  prometheus:
+    image: prom/prometheus:v2.45.0-rc.1
+    container_name: prometheus
+    user: root
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data/prometheus_data:/prometheus_data    
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus_data'
+      - '--storage.tsdb.retention.time=60d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    network_mode: host
+
+  grafana:
+    image: grafana/grafana:9.5.2
+    container_name: grafana
+    user: root
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    volumes:
+      - ./data/grafana_data:/var/lib/grafana
+      - ./grafana/etc:/etc/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=$GRAFANA_USER
+      - GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_PASSWORD
+      - GF_USERS_ALLOW_SIGN_UP=false
+    network_mode: host
+
+  json-exporter:
+    image: quay.io/prometheuscommunity/json-exporter
+    container_name: json-exporter
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/exporters/json-exporter/config.yml:/config.yml
+    command:
+      - '--config.file=/config.yml'
+    network_mode: host
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    network_mode: host
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/exporters/blackbox-exporter/config.yml:/config.yml
+    command:
+      - '--config.file=/config.yml'
+    network_mode: host

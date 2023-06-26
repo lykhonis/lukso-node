@@ -1,0 +1,6 @@
+modules:
+  default:
+    metrics:
+      - name: lyxusd
+        path: "{.lukso-token.usd}"
+        help: Lukso (LYX) price in USD
