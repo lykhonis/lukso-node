@@ -2325,6 +2325,169 @@
       "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "displayName": "",
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 18,
+        "y": 23
+      },
+      "id": 163,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "eth1_deposit_cache_len or\nbeacondb_pending_deposits",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "deposited",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "beacon_processed_deposits_total or\n(beacon_processed_deposits_total - 1)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "processed",
+          "refId": "B"
+        }
+      ],
+      "title": "Validator Deposits",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Current, justified, and finalized epochs. In this order, these three values should be sequentially decreasing.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "rgb(135, 135, 135)",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 26
+      },
+      "id": 27,
+      "links": [],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "floor(beacon_clock_time_slot{job=\"beacon node\"} / 32)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "current",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "beacon_current_justified_epoch{job=\"beacon node\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "justified",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "beacon_finalized_epoch {job=\"beacon node\"} ",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "finalized",
+          "refId": "D"
+        }
+      ],
+      "title": "Epochs",
+      "type": "stat"
+    },
+    {
       "aliasColors": {
         "active validators": "rgba(239, 132, 60, 0.57)"
       },
@@ -2348,7 +2511,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 23
+        "y": 26
       },
       "hiddenSeries": false,
       "id": 64,
@@ -2472,92 +2635,6 @@
       "yaxis": {
         "align": false
       }
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "Current, justified, and finalized epochs. In this order, these three values should be sequentially decreasing.",
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "mappings": [],
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "rgb(135, 135, 135)",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 12,
-        "y": 26
-      },
-      "id": 27,
-      "links": [],
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "floor(beacon_clock_time_slot{job=\"beacon node\"} / 32)",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "current",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "beacon_current_justified_epoch{job=\"beacon node\"}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "justified",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "beacon_finalized_epoch {job=\"beacon node\"} ",
-          "format": "time_series",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "finalized",
-          "refId": "D"
-        }
-      ],
-      "title": "Epochs",
-      "type": "stat"
     },
     {
       "datasource": {
@@ -2837,78 +2914,6 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "Current slot and head slot",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "rgb(135, 135, 135)",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 18,
-        "y": 29
-      },
-      "id": 29,
-      "links": [],
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "beacon_slot{job=\"beacon node\"}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "current slot",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "beacon_head_slot{job=\"beacon node\"}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "head slot",
-          "refId": "B"
-        }
-      ],
-      "title": "Slots",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
       "description": "A metric expressing the distance between the current finalized epoch and the expected finalized epoch based on the genesis time. 100% means the expected and current finalized epochs are the same. The metric reaches 0% when the finalized epoch is 25 epochs behind the expected epoch.",
       "fieldConfig": {
         "defaults": {
@@ -3158,6 +3163,78 @@
         }
       ],
       "title": "Beacon Logs",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Current slot and head slot",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "rgb(135, 135, 135)",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 18,
+        "y": 32
+      },
+      "id": 29,
+      "links": [],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "beacon_slot{job=\"beacon node\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "current slot",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "beacon_head_slot{job=\"beacon node\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "head slot",
+          "refId": "B"
+        }
+      ],
+      "title": "Slots",
       "type": "stat"
     },
     {
@@ -5181,8 +5258,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -5247,7 +5323,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "30s",
+  "refresh": "5m",
   "revision": 1,
   "schemaVersion": 38,
   "style": "dark",
@@ -5256,7 +5332,7 @@
     "list": []
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-12h",
     "to": "now"
   },
   "timepicker": {
@@ -5275,6 +5351,6 @@
   "timezone": "",
   "title": "Lukso",
   "uid": "92og3IP7z",
-  "version": 23,
+  "version": 26,
   "weekStart": ""
 }
