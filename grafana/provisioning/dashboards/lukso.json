@@ -1923,7 +1923,7 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 5,
+        "w": 4,
         "x": 0,
         "y": 29
       },
@@ -1986,67 +1986,281 @@
       "type": "stat"
     },
     {
+      "aliasColors": {
+        "active validators": "rgba(239, 132, 60, 0.57)"
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
       "datasource": {
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "Average validator balance across the network",
+      "description": "Number of pending and existing validators over time. Pending validators are shown as positive values, while exiting validators are shown as negative values.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 7,
+        "x": 4,
+        "y": 29
+      },
+      "hiddenSeries": false,
+      "id": 64,
+      "interval": "",
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "9.5.2",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "alias": "exiting",
+          "transform": "negative-Y"
+        },
+        {
+          "alias": "active validators",
+          "yaxis": 2
+        },
+        {
+          "alias": "slashing",
+          "transform": "negative-Y"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
           },
-          "decimals": 4,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
+          "editorMode": "code",
+          "expr": "validator_count{state=\"Pending\",job=\"beacon node\"} or (\n    (eth1_deposit_cache_len - beacon_processed_deposits_total) + beacon_head_state_total_validators_total - beacon_current_active_validators\n)",
+          "interval": "",
+          "legendFormat": "pending",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "validator_count{state=\"Exiting\",job=\"beacon node\"} or\nbeacon_head_state_withdrawn_validators_total{job=\"beacon node\"}",
+          "interval": "",
+          "legendFormat": "exiting",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "validator_count{state=\"Slashing\",job=\"beacon node\"} or\nbeacon_head_state_slashed_validators_total{job=\"beacon node\"}",
+          "interval": "",
+          "legendFormat": "slashing",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "validator_count{job=\"beacon node\", state=\"Active\"} or\nbeacon_head_state_active_validators_total{job=\"beacon node\"}",
+          "interval": "",
+          "legendFormat": "active validators",
+          "range": true,
+          "refId": "D"
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "Validators",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "validators",
+          "logBase": 1,
+          "show": true
+        },
+        {
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Current slot and head slot",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "rgb(135, 135, 135)",
                 "value": null
-              },
-              {
-                "color": "#73BF69",
-                "value": 32
-              },
-              {
-                "color": "#73BF69"
               }
             ]
-          },
-          "unit": "none"
+          }
         },
         "overrides": []
       },
       "gridPos": {
         "h": 3,
         "w": 3,
-        "x": 5,
+        "x": 11,
         "y": 29
       },
-      "id": 33,
+      "id": 29,
       "links": [],
-      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "beacon_slot{job=\"beacon node\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "current slot",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "beacon_head_slot{job=\"beacon node\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "head slot",
+          "refId": "B"
+        }
+      ],
+      "title": "Slots",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "The percentage of LYX balances expected to attest that are actually attesting.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "light-red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.66
+              },
+              {
+                "color": "yellow",
+                "value": 0.8
+              },
+              {
+                "color": "green",
+                "value": 0.9
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 2,
+        "x": 14,
+        "y": 29
+      },
+      "id": 23,
+      "links": [],
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "auto",
-        "orientation": "horizontal",
+        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "last"
           ],
-          "fields": "/^lyx$/",
+          "fields": "",
           "values": false
         },
         "text": {},
@@ -2060,16 +2274,189 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "exemplar": true,
-          "expr": "(validators_total_balance{state=\"Active\",job=\"beacon node\"} / validator_count{state=\"Active\",job=\"beacon node\"} / 1000000000) or\n(beacon_head_state_validator_balances_total{job=\"beacon node\"} / beacon_head_state_total_validators_total{job=\"beacon node\"} / 1000000000)",
+          "expr": "(beacon_prev_epoch_target_gwei{job=\"beacon node\"} / beacon_prev_epoch_active_gwei{job=\"beacon node\"}) or\n(beacon_participation_prev_epoch_target_attesting_gwei_total{job=\"beacon node\"} / beacon_participation_prev_epoch_active_gwei_total{job=\"beacon node\"})",
           "interval": "",
-          "legendFormat": "lyx",
+          "legendFormat": "",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Avg. Balance",
+      "title": "Participation Rate",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "A metric expressing the distance between the current finalized epoch and the expected finalized epoch based on the genesis time. 100% means the expected and current finalized epochs are the same. The metric reaches 0% when the finalized epoch is 25 epochs behind the expected epoch.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "light-red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.88
+              },
+              {
+                "color": "#EAB839",
+                "value": 0.92
+              },
+              {
+                "color": "green",
+                "value": 0.96
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 2,
+        "x": 16,
+        "y": 29
+      },
+      "id": 73,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "clamp_min((1-(4*((floor(beacon_clock_time_slot{job=\"beacon node\"}/32) - beacon_finalized_epoch{job=\"beacon node\"} - 2)/100))),0) or\nclamp_min((1-(4*((floor(slotclock_present_slot{job=\"beacon node\"}/32) - beacon_finalized_epoch{job=\"beacon node\"} - 2)/100))),0)",
+          "interval": "",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Network Liveness",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "The percentage of LYX balances expected to attest that are actually attesting.",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 4,
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 29
+      },
+      "hiddenSeries": false,
+      "id": 2,
+      "legend": {
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "9.5.2",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": true,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(beacon_prev_epoch_target_gwei{job=\"beacon node\"} / beacon_prev_epoch_active_gwei{job=\"beacon node\"}) or\n(beacon_participation_prev_epoch_target_attesting_gwei_total{job=\"beacon node\"} / beacon_participation_prev_epoch_active_gwei_total{job=\"beacon node\"})",
+          "interval": "",
+          "legendFormat": "participation rate",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "Participation Rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "percentunit",
+          "label": "Participation Rate",
+          "logBase": 1,
+          "max": "1",
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "logBase": 1,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
     },
     {
       "datasource": {
@@ -2098,9 +2485,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 5,
-        "x": 8,
-        "y": 29
+        "w": 4,
+        "x": 0,
+        "y": 32
       },
       "id": 163,
       "options": {
@@ -2187,9 +2574,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 5,
-        "x": 13,
-        "y": 29
+        "w": 3,
+        "x": 11,
+        "y": 32
       },
       "id": 27,
       "links": [],
@@ -2253,30 +2640,33 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "Current slot and head slot",
+      "description": "",
       "fieldConfig": {
         "defaults": {
+          "decimals": 0,
+          "displayName": "",
           "mappings": [],
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "rgb(135, 135, 135)",
+                "color": "green",
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "m"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 3,
-        "w": 6,
-        "x": 18,
-        "y": 29
+        "w": 2,
+        "x": 14,
+        "y": 32
       },
-      "id": 29,
-      "links": [],
+      "id": 170,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -2299,403 +2689,79 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "beacon_slot{job=\"beacon node\"}",
+          "editorMode": "code",
+          "expr": "(((beacon_head_state_total_validators_total-beacon_current_active_validators)/4)*6.4)",
           "instant": true,
           "interval": "",
-          "legendFormat": "current slot",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "beacon_head_slot{job=\"beacon node\"}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "head slot",
-          "refId": "B"
-        }
-      ],
-      "title": "Slots",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "The percentage of LYX balances expected to attest that are actually attesting.",
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 2,
-          "mappings": [],
-          "max": 1,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "light-red"
-              },
-              {
-                "color": "orange",
-                "value": 0.66
-              },
-              {
-                "color": "yellow",
-                "value": 0.8
-              },
-              {
-                "color": "green",
-                "value": 0.9
-              }
-            ]
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 5,
-        "x": 0,
-        "y": 32
-      },
-      "id": 23,
-      "links": [],
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "(beacon_prev_epoch_target_gwei{job=\"beacon node\"} / beacon_prev_epoch_active_gwei{job=\"beacon node\"}) or\n(beacon_participation_prev_epoch_target_attesting_gwei_total{job=\"beacon node\"} / beacon_participation_prev_epoch_active_gwei_total{job=\"beacon node\"})",
-          "interval": "",
-          "legendFormat": "",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Participation Rate",
-      "type": "stat"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "The percentage of LYX balances expected to attest that are actually attesting.",
-      "fieldConfig": {
-        "defaults": {
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 4,
-      "gridPos": {
-        "h": 6,
-        "w": 7,
-        "x": 5,
-        "y": 32
-      },
-      "hiddenSeries": false,
-      "id": 2,
-      "legend": {
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "9.5.2",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": true,
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "(beacon_prev_epoch_target_gwei{job=\"beacon node\"} / beacon_prev_epoch_active_gwei{job=\"beacon node\"}) or\n(beacon_participation_prev_epoch_target_attesting_gwei_total{job=\"beacon node\"} / beacon_participation_prev_epoch_active_gwei_total{job=\"beacon node\"})",
-          "interval": "",
-          "legendFormat": "participation rate",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeRegions": [],
-      "title": "Participation Rate",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "mode": "time",
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "percentunit",
-          "label": "Participation Rate",
-          "logBase": 1,
-          "max": "1",
-          "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "logBase": 1,
-          "show": false
-        }
-      ],
-      "yaxis": {
-        "align": false
-      }
-    },
-    {
-      "aliasColors": {
-        "active validators": "rgba(239, 132, 60, 0.57)"
-      },
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "Number of pending and existing validators over time. Pending validators are shown as positive values, while exiting validators are shown as negative values.",
-      "fieldConfig": {
-        "defaults": {
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 12,
-        "y": 32
-      },
-      "hiddenSeries": false,
-      "id": 64,
-      "interval": "",
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "rightSide": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "9.5.2",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "alias": "exiting",
-          "transform": "negative-Y"
-        },
-        {
-          "alias": "active validators",
-          "yaxis": 2
-        },
-        {
-          "alias": "slashing",
-          "transform": "negative-Y"
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "validator_count{state=\"Pending\",job=\"beacon node\"}",
-          "interval": "",
-          "legendFormat": "pending",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "validator_count{state=\"Exiting\",job=\"beacon node\"} or\nbeacon_head_state_withdrawn_validators_total{job=\"beacon node\"}",
-          "interval": "",
-          "legendFormat": "exiting",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "validator_count{state=\"Slashing\",job=\"beacon node\"} or\nbeacon_head_state_slashed_validators_total{job=\"beacon node\"}",
-          "interval": "",
-          "legendFormat": "slashing",
-          "range": true,
+          "legendFormat": "duration",
           "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "validator_count{job=\"beacon node\", state=\"Active\"} or\nbeacon_head_state_active_validators_total{job=\"beacon node\"}",
-          "interval": "",
-          "legendFormat": "active validators",
-          "range": true,
-          "refId": "D"
         }
       ],
-      "thresholds": [],
-      "timeRegions": [],
-      "title": "Validators",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "mode": "time",
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": "validators",
-          "logBase": 1,
-          "show": true
-        },
-        {
-          "format": "short",
-          "logBase": 1,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false
-      }
+      "title": "Validator Queue",
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "A metric expressing the distance between the current finalized epoch and the expected finalized epoch based on the genesis time. 100% means the expected and current finalized epochs are the same. The metric reaches 0% when the finalized epoch is 25 epochs behind the expected epoch.",
+      "description": "Average validator balance across the network",
       "fieldConfig": {
         "defaults": {
-          "decimals": 0,
-          "mappings": [],
-          "max": 1,
-          "min": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 4,
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "light-red"
+                "color": "red",
+                "value": null
               },
               {
-                "color": "orange",
-                "value": 0.88
+                "color": "#73BF69",
+                "value": 32
               },
               {
-                "color": "#EAB839",
-                "value": 0.92
-              },
-              {
-                "color": "green",
-                "value": 0.96
+                "color": "#73BF69"
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "none"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 3,
-        "w": 5,
-        "x": 0,
-        "y": 35
+        "w": 2,
+        "x": 16,
+        "y": 32
       },
-      "id": 73,
+      "id": 33,
+      "links": [],
+      "maxDataPoints": 100,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "auto",
-        "orientation": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "mean"
           ],
-          "fields": "",
+          "fields": "/^lyx$/",
           "values": false
         },
         "text": {},
@@ -2709,14 +2775,15 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "clamp_min((1-(4*((floor(beacon_clock_time_slot{job=\"beacon node\"}/32) - beacon_finalized_epoch{job=\"beacon node\"} - 2)/100))),0) or\nclamp_min((1-(4*((floor(slotclock_present_slot{job=\"beacon node\"}/32) - beacon_finalized_epoch{job=\"beacon node\"} - 2)/100))),0)",
+          "exemplar": true,
+          "expr": "(validators_total_balance{state=\"Active\",job=\"beacon node\"} / validator_count{state=\"Active\",job=\"beacon node\"} / 1000000000) or\n(beacon_head_state_validator_balances_total{job=\"beacon node\"} / beacon_head_state_total_validators_total{job=\"beacon node\"} / 1000000000)",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "lyx",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Network Liveness",
+      "title": "Avg. Balance",
       "type": "stat"
     },
     {
@@ -2725,7 +2792,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 35
       },
       "id": 165,
       "panels": [],
@@ -2751,7 +2818,8 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "#EAB839",
@@ -2771,7 +2839,7 @@
         "h": 4,
         "w": 3,
         "x": 0,
-        "y": 39
+        "y": 36
       },
       "id": 142,
       "options": {
@@ -2852,7 +2920,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -2932,7 +3001,7 @@
         "h": 8,
         "w": 7,
         "x": 3,
-        "y": 39
+        "y": 36
       },
       "id": 138,
       "options": {
@@ -3025,7 +3094,8 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "#EAB839",
@@ -3045,7 +3115,7 @@
         "h": 4,
         "w": 3,
         "x": 10,
-        "y": 39
+        "y": 36
       },
       "id": 144,
       "options": {
@@ -3129,7 +3199,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -3199,7 +3270,7 @@
         "h": 8,
         "w": 7,
         "x": 13,
-        "y": 39
+        "y": 36
       },
       "id": 17,
       "options": {
@@ -3325,7 +3396,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -3395,7 +3467,7 @@
         "h": 8,
         "w": 4,
         "x": 20,
-        "y": 39
+        "y": 36
       },
       "id": 99,
       "options": {
@@ -3455,7 +3527,8 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "#EAB839",
@@ -3475,7 +3548,7 @@
         "h": 4,
         "w": 3,
         "x": 0,
-        "y": 43
+        "y": 40
       },
       "id": 143,
       "options": {
@@ -3528,7 +3601,8 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "#EAB839",
@@ -3548,7 +3622,7 @@
         "h": 4,
         "w": 3,
         "x": 10,
-        "y": 43
+        "y": 40
       },
       "id": 140,
       "options": {
@@ -3622,7 +3696,7 @@
         "h": 4,
         "w": 3,
         "x": 0,
-        "y": 47
+        "y": 44
       },
       "id": 141,
       "options": {
@@ -3775,7 +3849,7 @@
         "h": 7,
         "w": 7,
         "x": 3,
-        "y": 47
+        "y": 44
       },
       "id": 145,
       "options": {
@@ -3830,7 +3904,7 @@
         "h": 6,
         "w": 5,
         "x": 10,
-        "y": 47
+        "y": 44
       },
       "hiddenSeries": false,
       "id": 155,
@@ -3923,7 +3997,7 @@
         "h": 6,
         "w": 5,
         "x": 15,
-        "y": 47
+        "y": 44
       },
       "hiddenSeries": false,
       "id": 156,
@@ -4015,7 +4089,7 @@
         "h": 6,
         "w": 4,
         "x": 20,
-        "y": 47
+        "y": 44
       },
       "hiddenSeries": false,
       "id": 152,
@@ -4152,7 +4226,7 @@
         "h": 6,
         "w": 5,
         "x": 0,
-        "y": 54
+        "y": 51
       },
       "id": 81,
       "options": {
@@ -4221,7 +4295,7 @@
         "h": 6,
         "w": 5,
         "x": 5,
-        "y": 54
+        "y": 51
       },
       "hiddenSeries": false,
       "id": 153,
@@ -4321,6 +4395,6 @@
   "timezone": "",
   "title": "Lukso",
   "uid": "92og3IP7z",
-  "version": 8,
+  "version": 14,
   "weekStart": ""
 }
