@@ -33,6 +33,13 @@ Set your validator password in a file `secrets/validator_password`.
 nano secrets/validator_password
 ```
 
+Restrict access to password with `sudo` only:
+
+```shell
+sudo chown root:root secrets/validator_password
+sudo chmod 400 secrets/validator_password
+```
+
 #### Validators
 
 Copy all validator keystores (`keystore-...json`) in `validators` folder.
