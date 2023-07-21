@@ -85,12 +85,12 @@ services:
       --enable-private-discovery
       --subscribe-all-subnets
       --validator-monitor-auto
-      --validator-monitor-individual-tracking-threshold 500
+      --validator-monitor-individual-tracking-threshold 1000
       --enr-address $EXTERNAL_IP
       --enr-udp-port 9000
       --enr-tcp-port 9000
       --discovery-port 9000
-      --target-peers 100
+      --target-peers 90
       --boot-nodes $LIGHTHOUSE_BOOTSTRAP_NODE
       --suggested-fee-recipient $WITHDRAWAL_ADDRESS
     network_mode: host
