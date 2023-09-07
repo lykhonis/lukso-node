@@ -84,13 +84,11 @@ services:
       --listen-address 0.0.0.0
       --enable-private-discovery
       --subscribe-all-subnets
-      --validator-monitor-auto
-      --validator-monitor-individual-tracking-threshold 1000
       --enr-address $EXTERNAL_IP
       --enr-udp-port 9000
       --enr-tcp-port 9000
       --discovery-port 9000
-      --target-peers 90
+      --target-peers 100
       --boot-nodes $LIGHTHOUSE_BOOTSTRAP_NODE
       --suggested-fee-recipient $WITHDRAWAL_ADDRESS
     network_mode: host
@@ -127,6 +125,8 @@ services:
     volumes:
       - ./data/consensus_data:/consensus_data
       - ./configs:/configs
+      - ./validators:/validators
+      - ./tools:/tools
     restart: unless-stopped
     stop_signal: SIGINT
     stop_grace_period: 2m
@@ -142,7 +142,7 @@ services:
       --metrics
       --metrics-address 0.0.0.0
       --metrics-port 8081
-      --beacon-nodes http://127.0.0.1:4000
+      --beacon-node http://127.0.0.1:4000
       --suggested-fee-recipient $WITHDRAWAL_ADDRESS
       --enable-high-validator-count-metrics
       --unencrypted-http-transport
