@@ -52,7 +52,7 @@ services:
     logging:
       driver: "local"
       options:
-        max-size: "100m"
+        max-size: "20m"
 
   beacon:
     image: sigp/lighthouse:$LIGHTHOUSE_VERSION
@@ -95,7 +95,7 @@ services:
     logging:
       driver: "local"
       options:
-        max-size: "100m"
+        max-size: "20m"
 
   validator_import:
     image: sigp/lighthouse:$LIGHTHOUSE_VERSION
@@ -150,7 +150,7 @@ services:
     logging:
       driver: "local"
       options:
-        max-size: "100m"
+        max-size: "20m"
 
   prometheus:
     image: prom/prometheus:v2.45.0-rc.1
