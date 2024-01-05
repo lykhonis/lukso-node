@@ -135,7 +135,6 @@ services:
       --debug-level $LIGHTHOUSE_DEBUG_LEVEl
       --datadir /consensus_data
       --testnet-dir /configs
-      --init-slashing-protection
       --http
       --http-address 0.0.0.0
       --http-port 5062
@@ -146,6 +145,7 @@ services:
       --suggested-fee-recipient $WITHDRAWAL_ADDRESS
       --enable-high-validator-count-metrics
       --unencrypted-http-transport
+      --enable-doppelganger-protection
     network_mode: host
     logging:
       driver: "local"
